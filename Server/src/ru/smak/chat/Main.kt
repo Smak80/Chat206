@@ -1,4 +1,5 @@
 package ru.smak.chat
 
-class Main {
+fun main() {
+    Server(5206)
 }
