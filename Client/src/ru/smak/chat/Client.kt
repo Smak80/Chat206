@@ -12,7 +12,11 @@ class Client(
 
     init{
         val writer = PrintWriter(socket.getOutputStream())
-        writer.println("Привеееееет!!!!")
+
+        val userScanner = Scanner(System.`in`)
+        val userInput = userScanner.nextLine()
+
+        writer.println(userInput)
         writer.flush()
         val scanner = Scanner(socket.getInputStream())
         val serverData = scanner.nextLine()
