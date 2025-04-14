@@ -4,6 +4,7 @@ import java.io.PrintWriter
 import java.net.ServerSocket
 import java.util.Scanner
 import kotlin.concurrent.thread
+import Communicator
 
 class Server(
     val port: Int = 5206

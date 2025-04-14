@@ -1,5 +1,6 @@
 package ru.smak.chat
 
+import Communicator
 import java.io.PrintWriter
 import java.net.Socket
 import java.util.Scanner
@@ -9,32 +10,18 @@ class Client(
     val host: String,
     val port: Int,
 ) {
-    private val socket: Socket = Socket(host, port)
-    private var isRunning = true
-    private val scanner = Scanner(socket.getInputStream())
-    private val writer = PrintWriter(socket.getOutputStream())
-
     private val userScanner = Scanner(System.`in`)
+    private val communicator = Communicator(Socket(host, port))
 
     init{
-        startMessageAccepting()
+        communicator.start(::parse)
 
         var userInput = "-"
         thread {
             while (userInput.isNotBlank()) {
                 userInput = userScanner.nextLine()
-                sendMessage(userInput)
+                communicator.sendMessage(userInput)
             }
-        }
-    }
-
-    private fun startMessageAccepting(){
-        thread {
-            while(isRunning){
-                val data = scanner.nextLine()
-                parse(data)
-            }
-            socket.close()
         }
     }
 
@@ -42,12 +29,6 @@ class Client(
         println("От сервера пришло: $data")
     }
 
-    fun stop(){
-        isRunning = false
-    }
+    fun stop() = communicator.stop()
 
-    fun sendMessage(message: String){
-        writer.println(message)
-        writer.flush()
-    }
 }
