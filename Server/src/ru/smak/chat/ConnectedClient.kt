@@ -5,6 +5,7 @@ import java.net.Socket
 
 class ConnectedClient(val client: Socket) {
     private val communicator = Communicator(client)
+    private var userName: String? = null
 
     init {
         communicator.start(::parse)
