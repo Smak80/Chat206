@@ -26,7 +26,7 @@ class Client(
     }
 
     private fun parse(data: String){
-        println("От сервера пришло: $data")
+        println(data)
     }
 
     fun stop() = communicator.stop()

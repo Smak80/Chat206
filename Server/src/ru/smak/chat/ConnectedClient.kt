@@ -8,13 +8,23 @@ class ConnectedClient(val client: Socket) {
 
     init {
         communicator.start(::parse)
+        connectedClients.add(this)
     }
 
     private fun parse(data: String){
-        println("Клиент прислал: $data")
-        communicator.sendMessage(data)
+        sendToAll(data, false)
     }
 
     fun stop() = communicator.stop()
+
+    private fun sendToAll(data: String, echo: Boolean = true){
+        connectedClients.forEach {
+            if (echo || it != this) it.communicator.sendMessage(data)
+        }
+    }
+
+    companion object{
+        private val connectedClients = mutableListOf<ConnectedClient>()
+    }
 
 }
