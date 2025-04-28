@@ -5,17 +5,30 @@ import java.net.ServerSocket
 import java.util.Scanner
 import kotlin.concurrent.thread
 import Communicator
+import kotlinx.coroutines.*
+import java.net.InetSocketAddress
+import java.nio.channels.AsynchronousServerSocketChannel
+import kotlin.coroutines.suspendCoroutine
 
 class Server(
-    val port: Int = 5206
+    port: Int = 5206
 ) {
 
-    private val serverSocket: ServerSocket = ServerSocket(port)
+    private val serverSocket: AsynchronousServerSocketChannel =
+        AsynchronousServerSocketChannel.open()
+    private val serverScope = CoroutineScope(Dispatchers.IO)
 
     init{
-        thread {
+        serverSocket.bind(InetSocketAddress(port))
+
+        serverScope.launch {
             while(true) {
-                val socket = serverSocket.accept()
+                val socket = suspendCoroutine {
+                    serverSocket.accept(
+                        null,
+                        ActionCompletionHandler(it)
+                    )
+                }
                 ConnectedClient(socket)
             }
             serverSocket.close()
