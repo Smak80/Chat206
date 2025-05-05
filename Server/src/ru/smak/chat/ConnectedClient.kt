@@ -1,12 +1,14 @@
 package ru.smak.chat
 
 import Communicator
+import kotlinx.coroutines.*
 import java.net.Socket
 import java.nio.channels.AsynchronousSocketChannel
 
 class ConnectedClient(client: AsynchronousSocketChannel) {
     private val communicator = Communicator(client)
     private var userName: String? = null
+    private val clientScope = CoroutineScope(Dispatchers.IO)
 
     init {
         communicator.start(::parse)
@@ -21,7 +23,7 @@ class ConnectedClient(client: AsynchronousSocketChannel) {
 
     private fun sendToAll(data: String, echo: Boolean = true){
         connectedClients.forEach {
-            if (echo || it != this) it.communicator.sendMessage(data)
+            if (echo || it != this) clientScope.launch{it.communicator.sendMessage(data)}
         }
     }
 

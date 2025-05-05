@@ -1,26 +1,43 @@
 package ru.smak.chat
 
 import Communicator
+import kotlinx.coroutines.*
 import java.io.PrintWriter
+import java.net.InetSocketAddress
 import java.net.Socket
+import java.nio.channels.AsynchronousSocketChannel
 import java.util.Scanner
 import kotlin.concurrent.thread
+import kotlin.coroutines.suspendCoroutine
 
 class Client(
     val host: String,
     val port: Int,
 ) {
     private val userScanner = Scanner(System.`in`)
-    private val communicator = Communicator(Socket(host, port))
+    private val socket = AsynchronousSocketChannel.open()
+    private val communicator = Communicator(socket)
+    private val clientScope = CoroutineScope(Dispatchers.IO)
 
-    init{
-        communicator.start(::parse)
+    init {
+        runBlocking {
+            suspendCoroutine<Void> {
+                socket.connect(
+                    InetSocketAddress(host, port),
+                    null,
+                    ActionCompletionHandler(it)
+                )
+            }
 
-        var userInput = "-"
-        thread {
-            while (userInput.isNotBlank()) {
-                userInput = userScanner.nextLine()
-                communicator.sendMessage(userInput)
+
+            communicator.start(::parse)
+
+            var userInput = "-"
+            launch {
+                while (userInput.isNotBlank()) {
+                    userInput = userScanner.nextLine()
+                    communicator.sendMessage(userInput)
+                }
             }
         }
     }
@@ -30,5 +47,6 @@ class Client(
     }
 
     fun stop() = communicator.stop()
+
 
 }
